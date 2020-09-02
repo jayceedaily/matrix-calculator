@@ -35,11 +35,6 @@ export default {
             required: false,
             default: ""
         },
-        clear: {
-            type: Boolean,
-            required: true,
-            default: false,
-        }
     },
     data:  function() {
         return {

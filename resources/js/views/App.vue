@@ -1,9 +1,17 @@
 <template>
     <section class="section">
         <div class="container">
-
+                    <div class="columns" v-if="errors.length > 0">
+                        <div class="column">
+                            <div class="notification is-danger">
+                                {{errors.join(', ')}}
+                                <div class="delete" @click="errors=[]"></div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="columns">
+
                         <div class="column">
                             <form @submit.prevent="handleCompute">
                                 <div class="columns">
@@ -63,7 +71,7 @@
                                                 </div>
                                             </div>
                                             <hr style="margin-bottom:0">
-                                            <matrix :rows="form.a_row" :columns="form.a_column" @input="handleInputA" :clear="a_clear"/>
+                                            <matrix :rows="form.a_row" :columns="form.a_column" @input="handleInputA"/>
                                         </div>
                                     </div>
                                 </div>
@@ -123,12 +131,16 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <matrix :rows="form.a_column" :columns="form.b_column" @input="handleInputB" :clear="b_clear"/>
+                                            <matrix :rows="form.a_column" :columns="form.b_column" @input="handleInputB"/>
                                         </div>
                                     </div>
                                 </div>
 
                                 <button class="button is-primary" type="submit">Compute</button>
+                                <label class="checkbox is-pulled-right">
+                                    <input type="checkbox" v-model="debug_mode">
+                                    Debug Mode
+                                </label>
                             </form>
                         </div>
                     </div>
@@ -140,7 +152,7 @@
                                 <table class="table is-fullwidth">
                                     <tbody>
                                         <tr v-for="row in answer">
-                                            <td v-for="col in row">{{col}}</td>
+                                            <td v-for="col in row">{{debug_mode ? col : numToAlpha(col)}}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -171,8 +183,9 @@ export default {
                 b_column: 3,
             },
 
-            a_clear: false,
-            b_clear: false,
+            errors: [],
+
+            debug_mode: false,
 
         }
     },
@@ -189,15 +202,34 @@ export default {
 
             this.form.b_row = this.form.a_column;
 
-            axios({ url: 'api/matrix-compute',
-                        method: 'POST',
-                        data:this.form}).then((response) => {
-
-                            console.log(response);
-                            this.answer = response.data;
-                        });
+            axios({
+                url: 'api/matrix-compute',
+                method: 'POST',
+                data:this.form}).then((response) => {
+                                    this.answer = response.data;
+                                }).catch((response)=> {
+                                    this.errors = ['Something went wrong'];
+            });
         },
 
+        numToAlpha: function(value){
+
+            let code = '';
+
+            let flag;
+
+            while (value > 0) {
+
+                flag    = (value - 1) % 26;
+
+                code    = String.fromCharCode(65 + flag) + code;
+
+                value   = (value - flag) / 26 | 0;
+
+            }
+
+            return code || undefined;
+        }
     }
 
 }
