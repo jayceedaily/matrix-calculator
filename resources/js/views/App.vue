@@ -136,10 +136,10 @@
                                     </div>
                                 </div>
 
-                                <button class="button is-primary" type="submit">Compute</button>
+                                <button class="button is-primary" :class="is_loading ? 'is-loading' : ''" type="submit">Compute</button>
                                 <label class="checkbox is-pulled-right">
                                     <input type="checkbox" v-model="debug_mode">
-                                    Debug Mode
+                                    Show Numbers
                                 </label>
                             </form>
                         </div>
@@ -187,6 +187,8 @@ export default {
 
             debug_mode: false,
 
+            is_loading: false,
+
         }
     },
 
@@ -198,11 +200,11 @@ export default {
             this.form.b = data;
         },
 
-        handleCompute: function() {
-
+        handleCompute: async function() {
+            this.is_loading = true;
             this.form.b_row = this.form.a_column;
 
-            axios({
+            await axios({
                 url: 'api/matrix-compute',
                 method: 'POST',
                 data:this.form}).then((response) => {
@@ -210,6 +212,8 @@ export default {
                                 }).catch((response)=> {
                                     this.errors = ['Something went wrong'];
             });
+
+            this.is_loading = false;
         },
 
         numToAlpha: function(value){
